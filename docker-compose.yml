@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  mysql-master:
+    container_name: mysql-master
+    hostname: mysql-master
+    image: mysql:8.0.26
+    restart: unless-stopped
+    ports:
+      - 3340:3306
+    privileged: true
+    volumes:
+      - $PWD/mysql-master/volumes/log:/var/log/mysql  
+      - $PWD/my-master.cnf:/etc/mysql/my.cnf
+      - $PWD/mysql-master/volumes/data:/var/lib/mysql
+      - $PWD/mysql-master/volumes/mysql-files:/var/lib/mysql-files
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+    command: [
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_general_ci',
+        '--max_connections=1001'
+    ]
+    networks:
+      - myweb
+      
+  mysql-slave:
+    container_name: mysql-slave 
+    hostname: mysql-slave
+    image: mysql:8.0.26
+    restart: unless-stopped
+    ports:
+      - 3341:3306
+    depends_on:
+      - mysql-master
+    privileged: true
+    volumes:
+      - $PWD/mysql-slave/volumes/log:/var/log/mysql  
+      - $PWD/my-slave.cnf:/etc/mysql/my.cnf
+      - $PWD/mysql-slave/volumes/data:/var/lib/mysql
+      - $PWD/mysql-slave/volumes/mysql-files:/var/lib/mysql-files
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+    command: [
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_general_ci',
+        '--max_connections=1001'
+    ]
+    networks:
+      - myweb    
+
+networks:
+  myweb:
+#    driver: overlay
